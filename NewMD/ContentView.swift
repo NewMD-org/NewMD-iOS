@@ -8,6 +8,21 @@
 import SwiftUI
 import WebKit
 
+extension View {
+    func resignKeyboardOnDragGesture() -> some View {
+        return modifier(ResignKeyboardOnDragGesture())
+    }
+}
+
+struct ResignKeyboardOnDragGesture: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .gesture(DragGesture().onChanged { _ in
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            })
+    }
+}
+
 struct WebView: UIViewRepresentable {
     let urlString: String
 
@@ -42,6 +57,8 @@ struct WebView: UIViewRepresentable {
 struct ContentView: View {
     var body: some View {
         WebView(urlString: "https://newmd.eu.org")
+            .edgesIgnoringSafeArea(.all)
+            .resignKeyboardOnDragGesture()
     }
 }
 
