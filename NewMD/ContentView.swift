@@ -57,7 +57,7 @@ struct WebView: UIViewRepresentable {
 struct ContentView: View {
     var body: some View {
         WebView(urlString: "https://newmd.eu.org")
-            .edgesIgnoringSafeArea(.bottom)
+//            .edgesIgnoringSafeArea(.bottom)
             .resignKeyboardOnDragGesture()
     }
 }
