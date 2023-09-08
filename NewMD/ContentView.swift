@@ -101,12 +101,50 @@ struct WebView: UIViewRepresentable {
 }
 
 struct ContentView: View {
+    @State private var showUpdateAlert = false
+    
     var body: some View {
         WebView(urlString: "https://newmd.eu.org")
             .resignKeyboardOnDragGesture()
             .navigationBarTitleDisplayMode(.inline)
             .animation(nil)
-        
+            .onAppear(perform: checkForUpdates)
+            .alert(isPresented: $showUpdateAlert) {
+                Alert(title: Text("有新的更新"),
+                    message: Text("請前往App Store進行更新。"),
+                    dismissButton: .default(Text("立即更新"), action: {
+                        if let url = URL(string: "itms-apps://itunes.apple.com/app/6464370385") {
+                            UIApplication.shared.open(url)
+                        }
+                    })
+                )
+            }
+    }
+    func checkForUpdates() {
+        if let currentAppVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            let url = URL(string: "https://itunes.apple.com/lookup?bundleId=org.eu.newmd")!
+            
+            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                guard let data = data else { return }
+                
+                do {
+                    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                       let results = json["results"] as? [[String: Any]],
+                       let appStoreVersion = results.first?["version"] as? String {
+                        
+                        if appStoreVersion > currentAppVersion {
+                            DispatchQueue.main.async {
+                                self.showUpdateAlert = true
+                            }
+                        }
+                    }
+                } catch {
+                    print("Error parsing JSON: \(error)")
+                }
+            }
+            
+            task.resume()
+        }
     }
 }
 
