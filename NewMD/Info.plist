@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-</dict>
+	<dict>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true />
+		</dict>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false />
+		<key>NSUserNotificationUsageDescription</key>
+		<string>我們使用通知來提供重要的消息和更新。</string>
+	</dict>
 </plist>

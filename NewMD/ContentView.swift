@@ -7,6 +7,7 @@
 
 import SwiftUI
 import WebKit
+//import UserNotifications
 
 extension View {
     func resignKeyboardOnDragGesture() -> some View {
@@ -119,7 +120,85 @@ struct ContentView: View {
                     })
                 )
             }
+            .onAppear(perform: requestNotificationPermission)
+            .onAppear(perform: checkNotificationAuthorization)
+            .onAppear(perform: scheduleNotification)
     }
+    
+//    func registerForPushNotifications() {
+//            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+//                if granted {
+//                    DispatchQueue.main.async {
+//                        UIApplication.shared.registerForRemoteNotifications()
+//                    }
+//                }
+//            }
+//        }
+    
+    func scheduleNotification() {
+        let center = UNUserNotificationCenter.current()
+        
+        // 1. 請求權限
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                // 2. 定義通知的內容
+                let content = UNMutableNotificationContent()
+                content.title = "更新通知"
+                content.body = "您的課表已自動更新～\n趕快打開APP查看吧！"
+                content.sound = UNNotificationSound.default
+                
+                // 設定每天 10:10 的觸發器
+                var dateComponents = DateComponents()
+                dateComponents.hour = 08
+                dateComponents.minute = 00
+                let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+                
+                // 3. 添加通知請求
+                let request = UNNotificationRequest(identifier: "DailyNotification", content: content, trigger: trigger)
+                center.add(request) { error in
+                    if let error = error {
+                        print("Error scheduling notification: \(error)")
+                    }
+                }
+            } else {
+                print("Permission not granted: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
+    func requestNotificationPermission() {
+        let center = UNUserNotificationCenter.current()
+        
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("通知權限已授予")
+            } else {
+                print("通知權限被拒絕")
+            }
+        }
+    }
+
+    func checkNotificationAuthorization() {
+        let center = UNUserNotificationCenter.current()
+
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized:
+                print("已授予通知權限")
+            case .denied:
+                print("通知權限被拒絕")
+            case .notDetermined:
+                print("通知權限尚未決定")
+            case .provisional:
+                print("臨時通知權限")
+            case .ephemeral:
+                print("短暫的通知權限")
+            @unknown default:
+                print("未知的通知權限狀態")
+            }
+        }
+    }
+    
     func checkForUpdates() {
         if let currentAppVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             let url = URL(string: "https://itunes.apple.com/lookup?bundleId=org.eu.newmd")!
